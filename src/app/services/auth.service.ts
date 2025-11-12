@@ -48,11 +48,22 @@ export class AuthService {
   }
 
   private initializeGoogleSignIn(): void {
-    if (typeof window !== 'undefined' && window.google) {
-      window.google.accounts.id.initialize({
-        client_id: '1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com', // Reemplaza con tu Client ID real
-        callback: this.handleGoogleSignIn.bind(this)
-      });
+    // Google Sign-In will be initialized when available
+    if (typeof window === 'undefined') return;
+
+    const checkGoogle = () => {
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: 'YOUR_GOOGLE_CLIENT_ID_HERE',
+          callback: this.handleGoogleSignIn.bind(this)
+        });
+      }
+    };
+
+    if (window.google) {
+      checkGoogle();
+    } else {
+      setTimeout(checkGoogle, 1000);
     }
   }
 
@@ -64,12 +75,12 @@ export class AuthService {
         email: payload.email,
         name: payload.name,
         phone: '',
-        userType: 'client', // Por defecto, se puede cambiar después
+        userType: 'client',
         profileImage: payload.picture,
         createdAt: new Date(),
         isActive: true
       };
-      
+
       localStorage.setItem('currentUser', JSON.stringify(user));
       this.currentUserSubject.next(user);
     } catch (error) {
@@ -78,10 +89,10 @@ export class AuthService {
   }
 
   signInWithGoogle(): void {
-    if (typeof window !== 'undefined' && window.google) {
+    if (typeof window !== 'undefined' && window.google?.accounts?.id) {
       window.google.accounts.id.prompt();
     } else {
-      console.error('Google Sign-In not initialized');
+      console.log('Google Sign-In is not available. Using email/password login instead.');
     }
   }
 
