@@ -2,6 +2,12 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { User } from '../models/user.model';
 
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -15,6 +21,8 @@ export class AuthService {
     if (storedUser) {
       this.currentUserSubject.next(JSON.parse(storedUser));
     }
+    
+    this.initializeGoogleSignIn();
   }
 
   login(email: string, password: string, userType: 'client' | 'carpenter' | 'admin'): Observable<User> {
@@ -37,6 +45,44 @@ export class AuthService {
         observer.complete();
       }, 1000);
     });
+  }
+
+  private initializeGoogleSignIn(): void {
+    if (typeof window !== 'undefined' && window.google) {
+      window.google.accounts.id.initialize({
+        client_id: '1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com', // Reemplaza con tu Client ID real
+        callback: this.handleGoogleSignIn.bind(this)
+      });
+    }
+  }
+
+  private handleGoogleSignIn(response: any): void {
+    try {
+      const payload = JSON.parse(atob(response.credential.split('.')[1]));
+      const user: User = {
+        id: payload.sub,
+        email: payload.email,
+        name: payload.name,
+        phone: '',
+        userType: 'client', // Por defecto, se puede cambiar después
+        profileImage: payload.picture,
+        createdAt: new Date(),
+        isActive: true
+      };
+      
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      this.currentUserSubject.next(user);
+    } catch (error) {
+      console.error('Error processing Google Sign-In:', error);
+    }
+  }
+
+  signInWithGoogle(): void {
+    if (typeof window !== 'undefined' && window.google) {
+      window.google.accounts.id.prompt();
+    } else {
+      console.error('Google Sign-In not initialized');
+    }
   }
 
   register(userData: Partial<User>): Observable<User> {

@@ -4,6 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -27,6 +33,16 @@ import { AuthService } from '../../services/auth.service';
               required
               class="form-input"
             >
+          </div>
+          
+          <div class="google-signin-section">
+            <div class="divider">
+              <span>o</span>
+            </div>
+            <button type="button" class="google-signin-btn" (click)="signInWithGoogle()">
+              <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-icon">
+              Continuar con Google
+            </button>
           </div>
           
           <div class="form-group">
@@ -84,11 +100,65 @@ import { AuthService } from '../../services/auth.service';
       padding: 2rem;
       width: 100%;
       max-width: 400px;
+      position: relative;
+    }
+    
+    .google-signin-section {
+      margin: 1.5rem 0;
+    }
+    
+    .divider {
+      text-align: center;
+      margin: 1rem 0;
+      position: relative;
+    }
+    
+    .divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: #ddd;
+    }
+    
+    .divider span {
+      background: white;
+      padding: 0 1rem;
+      color: #666;
+    }
+    
+    .google-signin-btn {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      background: white;
+      color: #333;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.3s;
+      margin-bottom: 1rem;
     }
     
     .login-header {
       text-align: center;
       margin-bottom: 2rem;
+    }
+    
+    .google-signin-btn:hover {
+      border-color: #4285f4;
+      box-shadow: 0 2px 4px rgba(66, 133, 244, 0.2);
+    }
+    
+    .google-icon {
+      width: 20px;
+      height: 20px;
     }
     
     .login-header h2 {
@@ -197,5 +267,9 @@ export class LoginComponent {
         console.error('Login error:', error);
       }
     });
+  }
+
+  signInWithGoogle(): void {
+    this.authService.signInWithGoogle();
   }
 }
